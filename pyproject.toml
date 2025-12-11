@@ -11,6 +11,13 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
+jax = "0.4.34"
+pandas = "^2.3.3"
+epiweeks = "^2.3.0"
+argparse = "^1.4.0"
+matplotlib = "^3.10.8"
+jaxlib = "0.4.34"
+numpyro = "^0.19.0"
 
 
 [build-system]
