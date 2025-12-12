@@ -2,9 +2,15 @@
 
 class puca( object ):
 
-    def __init__(self,d):
-        self.d = d
-        self.organize_data()
+    def __init__(self,d=None, d_wide=None):
+
+        if d is not None:
+            self.d = d
+            self.organize_data(d=d)
+            
+        elif d_wide is not None:
+            self.d = None
+            self.organize_data(d_wide=d_wide)
 
     def smooth_gaussian_anchored(self,x, sigma=2.0):
         import numpy as np
@@ -31,11 +37,14 @@ class puca( object ):
         y[-1] = x[-1]
         return y
        
-    def organize_data(self):
+    def organize_data(self, d=None, d_wide=None):
         import pandas as pd
         import numpy as np
 
-        d_wide = pd.pivot_table( index = ["MMWRWK"], columns = ["season"], values = ["value"], data = self.d )
+        if d is not None:
+            d_wide = pd.pivot_table( index = ["MMWRWK"], columns = ["season"], values = ["value"], data = self.d )
+        else:
+            pass
 
         try:
             d_wide = d_wide.loc[ list(np.arange(40,53+1)) + list(np.arange(1,20+1))  ]
@@ -191,7 +200,6 @@ class puca( object ):
             natural_y_predictions = yhat_scaled_pred*scale + center
 
             numpyro.deterministic("forecast_natural", jnp.clip( jnp.concatenate([y[idx_obs], natural_y_predictions ], axis=0), 0, None))
-
 
     def fit(self, estimate_lmax=True,fixed_factors=None, use_anchor=False):
         import jax
