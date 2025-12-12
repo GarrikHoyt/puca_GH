@@ -53,6 +53,8 @@ if __name__ == "__main__":
     ili_data__wide = pd.pivot_table( index = ["MMWRWK"], columns = ["season"], values = ["ili"], data = ili_data )
     ili_data__wide = ili_data__wide.loc[ list(np.arange(40,52+1)) + list(np.arange(1,20+1))]
 
+    ili_data__wide = ili_data__wide.iloc[:,:-1]
+
     X        = ili_data__wide.to_numpy()
     past_y   = hosp_data__wide.to_numpy()[:,:-1] #<--last column is the target
     target_y = hosp_data__wide.to_numpy()[:,-1]
