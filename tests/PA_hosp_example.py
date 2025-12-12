@@ -5,6 +5,8 @@ import pandas as pd
 from puca import puca
 
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+
 import seaborn as sns
 
 import scienceplots
@@ -36,7 +38,6 @@ if __name__ == "__main__":
         d = d.merge(time_data, on = ["date"])
         return d
 
-
     STATE = "42" #<--these are FIPS
     
     hosp_data = add_season_info(hosp_data)
@@ -54,10 +55,13 @@ if __name__ == "__main__":
     this_season_data = organized_dataset.iloc[:,-1].values
     last_obs = np.min(np.argwhere(np.isnan(this_season_data)))
 
-
-    fig,axs = plt.subplots(2,2)
+    #--plot
+    plt.style.use("science")
     
-    ax = axs[0,0]
+    fig = plt.figure()
+    gs = GridSpec(2, 2, width_ratios=[1, 1], height_ratios=[2, 1])
+
+    ax = fig.add_subplot(gs[0,:])
 
     weeks = np.arange(len(this_season_data))
 
@@ -75,17 +79,39 @@ if __name__ == "__main__":
     ax.fill_between( weeks[last_obs:], _25[last_obs:], _975[last_obs:], color = "blue", alpha=0.25 )
     ax.fill_between( weeks[last_obs:], _250[last_obs:], _750[last_obs:], color = "blue", alpha=0.25 )
 
-    ax = axs[1,0]
+    ax.set_xlabel("")
+    ax.set_xlim(0,33)
+    ax.set_xticks([0,10,20,30])
+    ax.set_xticklabels([])
+    
+    ax.set_ylabel("PA inc hosps")
+    
+    ax = fig.add_subplot(gs[1,0])
 
     fundemental_shapes = puca_model.post_samples["L"].mean(0)
-    ax.plot(fundemental_shapes)
+    importances        = 10*np.abs(puca_model.post_samples["betas"].mean(0))
 
-    ax = axs[0,1]
+    for (shape,importance) in zip( fundemental_shapes.T, importances ):
+        ax.plot(shape, lw = importance)
 
-    sns.boxplot(puca_model.post_samples["w"], fliersize=0)
-    ax.set_xlabel("Seasons")
-    ax.set_ylabel("Similarity (measured as weight)G")
+    ax.set_xlabel("Epidemic week")
+    ax.set_xlim(0,33)
+    ax.set_xticks([0,10,20,30])
     
+    ax.set_ylabel("Shape Z-scores")
+
+    ax = fig.add_subplot(gs[1,1])
+
+    sns.barplot(puca_model.post_samples["w"], ax=ax)
+    ax.set_xlabel("")
+    ax.set_ylabel("Similarity")
+
+    seasons = [y for x,y in organized_dataset.columns[:-1]]
+    ax.set_xticks(np.arange(len(seasons)))
+    ax.set_xticklabels( seasons, rotation=35, ha="right", fontsize=8 )
+
+    fig.set_size_inches( (8.5-2)/2, (11-2)/3 )
+    fig.set_tight_layout(True)
 
     plt.show()
     
